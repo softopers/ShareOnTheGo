@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.androidzeitgeist.ani.discovery.DiscoveryException;
 import com.androidzeitgeist.ani.discovery.DiscoveryListener;
@@ -14,11 +16,12 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
-public class MainActivity extends AppCompatActivity implements DiscoveryListener {
+public class MainActivity extends AppCompatActivity implements DiscoveryListener, View.OnClickListener {
 
     private static final String EXTRA_MESSAGE = "message";
     public static String TAG = MainActivity.class.getSimpleName();
     private boolean discoveryStarted;
+    private Button buttonSend;
 
     public static String getWifiApIpAddress() {
         try {
@@ -50,13 +53,16 @@ public class MainActivity extends AppCompatActivity implements DiscoveryListener
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ((ShareOnTheGoApplication) getApplicationContext()).discovery.setDisoveryListener(this);
-        final Intent intent = new Intent();
-        intent.putExtra(EXTRA_MESSAGE, "hiiiii");
-        new Thread() {
-            public void run() {
-                ((ShareOnTheGoApplication) getApplicationContext()).transmitIntent(intent);
-            }
-        }.start();
+
+        buttonSend = (Button) findViewById(R.id.buttonSend);
+        buttonSend.setOnClickListener(this);
+//        final Intent intent = new Intent();
+//        intent.putExtra(EXTRA_MESSAGE, "hiiiii");
+//        new Thread() {
+//            public void run() {
+//                ((ShareOnTheGoApplication) getApplicationContext()).transmitIntent(intent);
+//            }
+//        }.start();
 
     }
 
@@ -106,6 +112,15 @@ public class MainActivity extends AppCompatActivity implements DiscoveryListener
         super.onStop();
         if (discoveryStarted) {
             ((ShareOnTheGoApplication) getApplicationContext()).discovery.disable();
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.buttonSend:
+                startActivity(new Intent(getApplicationContext(), ConnectionActivity.class));
+                break;
         }
     }
 }
