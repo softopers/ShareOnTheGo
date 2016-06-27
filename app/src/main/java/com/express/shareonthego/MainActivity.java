@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity implements DiscoveryListener
     public static String TAG = MainActivity.class.getSimpleName();
     private boolean discoveryStarted;
     private Button buttonSend;
+    private Button buttonConnect;
 
     public static String getWifiApIpAddress() {
         try {
@@ -55,7 +56,14 @@ public class MainActivity extends AppCompatActivity implements DiscoveryListener
         ((ShareOnTheGoApplication) getApplicationContext()).discovery.setDisoveryListener(this);
 
         buttonSend = (Button) findViewById(R.id.buttonSend);
-        buttonSend.setOnClickListener(this);
+        if (buttonSend != null) {
+            buttonSend.setOnClickListener(this);
+        }
+
+        buttonConnect = (Button) findViewById(R.id.buttonConnect);
+        if (buttonConnect != null) {
+            buttonConnect.setOnClickListener(this);
+        }
 //        final Intent intent = new Intent();
 //        intent.putExtra(EXTRA_MESSAGE, "hiiiii");
 //        new Thread() {
@@ -118,8 +126,11 @@ public class MainActivity extends AppCompatActivity implements DiscoveryListener
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.buttonSend:
+            case R.id.buttonConnect:
                 startActivity(new Intent(getApplicationContext(), ConnectionActivity.class));
+                break;
+            case R.id.buttonSend:
+                startActivity(new Intent(getApplicationContext(), HotspotActivity.class));
                 break;
         }
     }

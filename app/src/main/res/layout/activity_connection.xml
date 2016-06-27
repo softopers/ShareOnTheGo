@@ -52,6 +52,7 @@
                         android:layout_weight=".85">
 
                         <TextView
+                            android:id="@+id/textViewIpAddress"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:gravity="start|center"
@@ -67,9 +68,16 @@
                         android:background="@color/colorPrimary" />
 
                     <LinearLayout
+                        android:id="@+id/linearQrCode"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        android:layout_weight=".15"></LinearLayout>
+                        android:layout_weight=".15">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@mipmap/ic_qrcode" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <TextView

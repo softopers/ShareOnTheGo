@@ -3,4 +3,9 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_app_intro">AppIntroActivity</string>
     <string name="title_activity_connection">ConnectionActivity</string>
+
+    <string name="qr_code_not_available">QR-Code App not available</string>
+    <string name="url_clipboard">URL has been copied to the clipboard.</string>
+    <string name="title_activity_hotspot">HotspotActivity</string>
+
 </resources>
