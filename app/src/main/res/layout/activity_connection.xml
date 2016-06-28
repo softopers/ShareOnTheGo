@@ -51,15 +51,16 @@
                         android:layout_gravity="center"
                         android:layout_weight=".85">
 
-                        <TextView
+                        <com.express.shareonthego.spritzer.SpritzerTextView
                             android:id="@+id/textViewIpAddress"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:gravity="start|center"
                             android:paddingLeft="16dp"
                             android:paddingStart="16dp"
-                            android:text="http://192.168.1.4:8888"
-                            android:textSize="22sp" />
+                            android:textSize="22sp"
+                            android:typeface="monospace"
+                            app:clickControls="false" />
                     </LinearLayout>
 
                     <View

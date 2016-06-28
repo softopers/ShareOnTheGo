@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity implements DiscoveryListener
     private boolean discoveryStarted;
     private Button buttonSend;
     private Button buttonConnect;
+    private Button buttonReceive;
 
     public static String getWifiApIpAddress() {
         try {
@@ -63,6 +64,11 @@ public class MainActivity extends AppCompatActivity implements DiscoveryListener
         buttonConnect = (Button) findViewById(R.id.buttonConnect);
         if (buttonConnect != null) {
             buttonConnect.setOnClickListener(this);
+        }
+
+        buttonReceive = (Button) findViewById(R.id.buttonReceive);
+        if (buttonReceive != null) {
+            buttonReceive.setOnClickListener(this);
         }
 //        final Intent intent = new Intent();
 //        intent.putExtra(EXTRA_MESSAGE, "hiiiii");
@@ -130,7 +136,10 @@ public class MainActivity extends AppCompatActivity implements DiscoveryListener
                 startActivity(new Intent(getApplicationContext(), ConnectionActivity.class));
                 break;
             case R.id.buttonSend:
-                startActivity(new Intent(getApplicationContext(), HotspotActivity.class));
+                startActivity(new Intent(getApplicationContext(), HotspotActivity.class).putExtra("type", "sender"));
+                break;
+            case R.id.buttonReceive:
+                startActivity(new Intent(getApplicationContext(), HotspotActivity.class).putExtra("type", "receiver"));
                 break;
         }
     }

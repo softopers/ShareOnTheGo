@@ -20,6 +20,8 @@ import android.widget.TextView;
 import com.express.shareonthego.shareviahttp.MyHttpServer;
 import com.express.shareonthego.shareviahttp.UriInterpretation;
 import com.express.shareonthego.shareviahttp.Util;
+import com.express.shareonthego.spritzer.Spritzer;
+import com.express.shareonthego.spritzer.SpritzerTextView;
 
 import java.util.ArrayList;
 
@@ -30,7 +32,7 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
     private CharSequence[] listOfServerUris;
     private String preferredServerUrl;
     private LinearLayout linearQrCode;
-    private TextView textViewIpAddress;
+    private SpritzerTextView textViewIpAddress;
     private TextView uriPath;
 
     @Override
@@ -50,11 +52,23 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
             });
         }
 
-        textViewIpAddress = (TextView) findViewById(R.id.textViewIpAddress);
+        textViewIpAddress = (SpritzerTextView) findViewById(R.id.textViewIpAddress);
+        textViewIpAddress.setSpritzText("192.168.43.1:9999 192.168.0.4:9999 192.168.4.1:9999 192.168.4.11:9999 192.168.1.1:9999 192.168.43.15:9999 192.168.11.1:9999 192.168.25.25:9999.");
+        textViewIpAddress.setWpm(1000);
+        textViewIpAddress.play();
+
+        textViewIpAddress.setOnCompletionListener(new Spritzer.OnCompletionListener() {
+            @Override
+            public void onComplete() {
+                textViewIpAddress.play();
+            }
+        });
+
         uriPath = (TextView) findViewById(R.id.uriPath);
 
         linearQrCode = (LinearLayout) findViewById(R.id.linearQrCode);
         if (linearQrCode != null) {
+            linearQrCode.setEnabled(false);
             linearQrCode.setOnClickListener(this);
         }
 
@@ -63,6 +77,7 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    textViewIpAddress.pause();
                     boolean isKitKatOrHigher = getResources().getBoolean(R.bool.isKitKatOrHigher);
                     if (isKitKatOrHigher) {
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -105,6 +120,9 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
             initHttpServer(uriList);
             saveServerUrlToClipboard();
             setLinkMessageToView();
+            linearQrCode.setEnabled(true);
+        } else {
+            textViewIpAddress.play();
         }
     }
 
