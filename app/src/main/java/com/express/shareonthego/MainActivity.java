@@ -8,15 +8,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import com.androidzeitgeist.ani.discovery.DiscoveryException;
-import com.androidzeitgeist.ani.discovery.DiscoveryListener;
-
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
-public class MainActivity extends AppCompatActivity implements DiscoveryListener, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener //DiscoveryListener
+{
 
     private static final String EXTRA_MESSAGE = "message";
     public static String TAG = MainActivity.class.getSimpleName();
@@ -54,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements DiscoveryListener
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        ((ShareOnTheGoApplication) getApplicationContext()).discovery.setDisoveryListener(this);
+//        ((ShareOnTheGoApplication) getApplicationContext()).discovery.setDisoveryListener(this);
 
         buttonSend = (Button) findViewById(R.id.buttonSend);
         if (buttonSend != null) {
@@ -79,55 +77,55 @@ public class MainActivity extends AppCompatActivity implements DiscoveryListener
 //        }.start();
 
     }
+//
+//    @Override
+//    public void onDiscoveryStarted() {
+//        Log.d(TAG, "onDiscoveryStarted: " + ("* (>) Discovery started"));
+//    }
+//
+//    @Override
+//    public void onDiscoveryStopped() {
+//        Log.d(TAG, "onDiscoveryStopped: " + ("* (<) Discovery stopped"));
+//    }
+//
+//    @Override
+//    public void onDiscoveryError(Exception exception) {
+//        Log.d(TAG, "onDiscoveryError: " + "* (!) Discovery error: " + exception.getMessage());
+//    }
+//
+//    @Override
+//    public void onIntentDiscovered(InetAddress address, Intent intent) {
+//        if (!intent.hasExtra(EXTRA_MESSAGE)) {
+//            Log.d(TAG, "onIntentDiscovered: " + "* (!) Received Intent without message");
+//            return;
+//        }
+//
+//        String message = intent.getStringExtra(EXTRA_MESSAGE);
+//        String sender = address.getHostAddress();
+//
+//        Log.d(TAG, "onIntentDiscovered: " + "<" + sender + "> " + message);
+//    }
 
-    @Override
-    public void onDiscoveryStarted() {
-        Log.d(TAG, "onDiscoveryStarted: " + ("* (>) Discovery started"));
-    }
-
-    @Override
-    public void onDiscoveryStopped() {
-        Log.d(TAG, "onDiscoveryStopped: " + ("* (<) Discovery stopped"));
-    }
-
-    @Override
-    public void onDiscoveryError(Exception exception) {
-        Log.d(TAG, "onDiscoveryError: " + "* (!) Discovery error: " + exception.getMessage());
-    }
-
-    @Override
-    public void onIntentDiscovered(InetAddress address, Intent intent) {
-        if (!intent.hasExtra(EXTRA_MESSAGE)) {
-            Log.d(TAG, "onIntentDiscovered: " + "* (!) Received Intent without message");
-            return;
-        }
-
-        String message = intent.getStringExtra(EXTRA_MESSAGE);
-        String sender = address.getHostAddress();
-
-        Log.d(TAG, "onIntentDiscovered: " + "<" + sender + "> " + message);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        try {
-            ((ShareOnTheGoApplication) getApplicationContext()).discovery.enable();
-            discoveryStarted = true;
-        } catch (DiscoveryException exception) {
-            Log.d(TAG, "onResume: " + "* (!) Could not start discovery: " + exception.getMessage());
-            discoveryStarted = false;
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (discoveryStarted) {
-            ((ShareOnTheGoApplication) getApplicationContext()).discovery.disable();
-        }
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//
+//        try {
+//            ((ShareOnTheGoApplication) getApplicationContext()).discovery.enable();
+//            discoveryStarted = true;
+//        } catch (DiscoveryException exception) {
+//            Log.d(TAG, "onResume: " + "* (!) Could not start discovery: " + exception.getMessage());
+//            discoveryStarted = false;
+//        }
+//    }
+//
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        if (discoveryStarted) {
+//            ((ShareOnTheGoApplication) getApplicationContext()).discovery.disable();
+//        }
+//    }
 
     @Override
     public void onClick(View v) {

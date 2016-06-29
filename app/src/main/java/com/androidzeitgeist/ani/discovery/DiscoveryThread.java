@@ -19,6 +19,8 @@ package com.androidzeitgeist.ani.discovery;
 import android.content.Intent;
 import android.util.Log;
 
+import com.express.shareonthego.MainActivity;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -141,7 +143,9 @@ class DiscoveryThread extends Thread {
                 String intentUri = new String(data, 0, length);
                 Intent intent = Intent.parseUri(intentUri, 0);
 
-                listener.onIntentDiscovered(packet.getAddress(), intent);
+                if (!packet.getAddress().toString().replace("/", "").equals(MainActivity.getWifiApIpAddress())) {
+                    listener.onIntentDiscovered(packet.getAddress(), intent);
+                }
             } catch (URISyntaxException exception) {
                 Log.v(TAG, "Received UDP packet that could not be parsed as Intent");
             }

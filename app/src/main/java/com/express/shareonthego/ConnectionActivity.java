@@ -2,38 +2,80 @@ package com.express.shareonthego;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.androidzeitgeist.ani.discovery.DiscoveryException;
+import com.androidzeitgeist.ani.discovery.DiscoveryListener;
 import com.express.shareonthego.shareviahttp.MyHttpServer;
 import com.express.shareonthego.shareviahttp.UriInterpretation;
 import com.express.shareonthego.shareviahttp.Util;
 import com.express.shareonthego.spritzer.Spritzer;
 import com.express.shareonthego.spritzer.SpritzerTextView;
+import com.liulishuo.filedownloader.BaseDownloadTask;
+import com.liulishuo.filedownloader.FileDownloader;
+import com.liulishuo.filedownloader.model.FileDownloadStatus;
+import com.liulishuo.filedownloader.notification.BaseNotificationItem;
+import com.liulishuo.filedownloader.notification.FileDownloadNotificationHelper;
+import com.liulishuo.filedownloader.notification.FileDownloadNotificationListener;
+import com.liulishuo.filedownloader.util.FileDownloadHelper;
+import com.liulishuo.filedownloader.util.FileDownloadUtils;
 
+import java.io.File;
+import java.lang.ref.WeakReference;
+import java.net.InetAddress;
 import java.util.ArrayList;
 
-public class ConnectionActivity extends AppCompatActivity implements View.OnClickListener {
+public class ConnectionActivity extends AppCompatActivity implements View.OnClickListener, DiscoveryListener {
 
     public static final int REQUEST_CODE = 1221;
+    public final static String KEY_PAUSE = "key.filedownloader.notification.pause";
+    private static final String EXTRA_MESSAGE = "message";
+    private static final String EXTRA_NAME = "name";
+    private final static String KEY_ID = "key.filedownloader.notification.id";
+    public static String TAG = ConnectionActivity.class.getSimpleName();
     private static MyHttpServer httpServer = null;
+    private final String savePath = FileDownloadUtils.getDefaultSaveRootPath() + File.separator + "notification";
+    public BroadcastReceiver pauseReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(KEY_PAUSE)) {
+                final int id = intent.getIntExtra(KEY_ID, 0);
+                FileDownloader.getImpl().pause(id);
+            }
+        }
+    };
     private CharSequence[] listOfServerUris;
     private String preferredServerUrl;
     private LinearLayout linearQrCode;
     private SpritzerTextView textViewIpAddress;
     private TextView uriPath;
+    private TextView textViewWifi;
+    private boolean discoveryStarted;
+    private FileDownloadNotificationHelper<NotificationItem> notificationHelper;
+    private NotificationListener listener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +83,8 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
         setContentView(R.layout.activity_connection);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        notificationHelper = new FileDownloadNotificationHelper<>();
+        ((ShareOnTheGoApplication) getApplicationContext()).discovery.setDisoveryListener(this);
         Util.context = this;
         if (toolbar != null) {
             toolbar.setNavigationIcon(R.mipmap.ic_up);
@@ -65,6 +109,19 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
         });
 
         uriPath = (TextView) findViewById(R.id.uriPath);
+
+        textViewWifi = (TextView) findViewById(R.id.textViewWifi);
+
+        WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        Log.d("wifiInfo", wifiInfo.toString());
+        Log.d("SSID", wifiInfo.getSSID());
+
+        if (getIntent().getBooleanExtra("hotspot", false)) {
+            textViewWifi.setText("Hotspot_Go");
+        } else {
+            textViewWifi.setText(wifiInfo.getSSID().replace("\"", ""));
+        }
 
         linearQrCode = (LinearLayout) findViewById(R.id.linearQrCode);
         if (linearQrCode != null) {
@@ -121,8 +178,71 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
             saveServerUrlToClipboard();
             setLinkMessageToView();
             linearQrCode.setEnabled(true);
+            final Intent intent = new Intent();
+            intent.putExtra(EXTRA_MESSAGE, preferredServerUrl);
+            intent.putExtra(EXTRA_NAME, uriPath.getText().toString());
+            new Thread() {
+                public void run() {
+                    ((ShareOnTheGoApplication) getApplicationContext()).transmitIntent(intent);
+                }
+            }.start();
         } else {
             textViewIpAddress.play();
+        }
+    }
+
+    @Override
+    public void onDiscoveryStarted() {
+        Log.d(TAG, "onDiscoveryStarted: " + ("* (>) Discovery started"));
+    }
+
+    @Override
+    public void onDiscoveryStopped() {
+        Log.d(TAG, "onDiscoveryStopped: " + ("* (<) Discovery stopped"));
+    }
+
+    @Override
+    public void onDiscoveryError(Exception exception) {
+        Log.d(TAG, "onDiscoveryError: " + "* (!) Discovery error: " + exception.getMessage());
+    }
+
+    @Override
+    public void onIntentDiscovered(InetAddress address, Intent intent) {
+        if (!intent.hasExtra(EXTRA_MESSAGE)) {
+            Log.d(TAG, "onIntentDiscovered: " + "* (!) Received Intent without message");
+            return;
+        }
+
+        String message = intent.getStringExtra(EXTRA_MESSAGE);
+        String name = intent.getStringExtra(EXTRA_NAME);
+        String sender = address.getHostAddress();
+        if (message != null) {
+
+            final String savePath = Environment.DIRECTORY_DOWNLOADS;
+            FileDownloader.getImpl().create("http://" + message)
+                    .setPath(savePath)
+                    .start();
+        }
+        Log.d(TAG, "onIntentDiscovered: " + "<" + sender + "> " + message);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        try {
+            ((ShareOnTheGoApplication) getApplicationContext()).discovery.enable();
+            discoveryStarted = true;
+        } catch (DiscoveryException exception) {
+            Log.d(TAG, "onResume: " + "* (!) Could not start discovery: " + exception.getMessage());
+            discoveryStarted = false;
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (discoveryStarted) {
+            ((ShareOnTheGoApplication) getApplicationContext()).discovery.disable();
         }
     }
 
@@ -148,7 +268,7 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
         listOfServerUris = httpServer.ListOfIpAddresses();
         preferredServerUrl = MyHttpServer.getLocalIpAddress() + ":9999";
 
-        httpServer.SetFiles(myUris);
+        MyHttpServer.SetFiles(myUris);
     }
 
     protected void populateUriPath(ArrayList<UriInterpretation> uriList) {
@@ -185,6 +305,187 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
             startActivity(intent);
         } catch (ActivityNotFoundException e) {
             Snackbar.make(findViewById(android.R.id.content), getString(R.string.qr_code_not_available), Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (Utility.isWifiApEnabled()) {
+            Utility.startHotSpot(false);
+        } else if (Utility.isConnectedToAP(getApplicationContext())) {
+            Utility.removeWifiNetwork("Hotspot_Go");
+        }
+
+        unregisterReceiver(pauseReceiver);
+    }
+
+    private static class NotificationListener extends FileDownloadNotificationListener {
+
+        public final static String KEY_PAUSE = "key.filedownloader.notification.pause";
+        private final static String KEY_ID = "key.filedownloader.notification.id";
+        public BroadcastReceiver pauseReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(KEY_PAUSE)) {
+                    final int id = intent.getIntExtra(KEY_ID, 0);
+                    FileDownloader.getImpl().pause(id);
+                }
+            }
+        };
+        private WeakReference<ConnectionActivity> wActivity;
+
+        public NotificationListener(WeakReference<ConnectionActivity> wActivity) {
+            super(wActivity.get().notificationHelper);
+            this.wActivity = wActivity;
+        }
+
+        @Override
+        protected BaseNotificationItem create(BaseDownloadTask task) {
+            return new NotificationItem(task.getId(), "demo title", "demo desc");
+        }
+
+        @Override
+        public void addNotificationItem(BaseDownloadTask task) {
+            super.addNotificationItem(task);
+            if (wActivity.get() != null) {
+                wActivity.get().showNotificationCb.setEnabled(false);
+            }
+        }
+
+        @Override
+        public void destroyNotification(BaseDownloadTask task) {
+            super.destroyNotification(task);
+            if (wActivity.get() != null) {
+                wActivity.get().showNotificationCb.setEnabled(true);
+                wActivity.get().downloadId = 0;
+            }
+        }
+
+        @Override
+        protected boolean interceptCancel(BaseDownloadTask task,
+                                          BaseNotificationItem n) {
+            // in this demo, I don't want to cancel the notification, just show for the test
+            // so return true
+            return true;
+        }
+
+        @Override
+        protected boolean disableNotification(BaseDownloadTask task) {
+            if (wActivity.get() != null) {
+                return !wActivity.get().showNotificationCb.isChecked();
+            }
+
+            return super.disableNotification(task);
+        }
+
+        @Override
+        protected void pending(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+            super.pending(task, soFarBytes, totalBytes);
+            if (wActivity.get() != null) {
+                wActivity.get().progressBar.setIndeterminate(true);
+            }
+        }
+
+        @Override
+        protected void progress(BaseDownloadTask task, int soFarBytes, int totalBytes) {
+            super.progress(task, soFarBytes, totalBytes);
+            if (wActivity.get() != null) {
+                wActivity.get().progressBar.setIndeterminate(false);
+                wActivity.get().progressBar.setMax(totalBytes);
+                wActivity.get().progressBar.setProgress(soFarBytes);
+            }
+        }
+
+        @Override
+        protected void completed(BaseDownloadTask task) {
+            super.completed(task);
+            if (wActivity.get() != null) {
+                wActivity.get().progressBar.setIndeterminate(false);
+                wActivity.get().progressBar.setProgress(task.getSmallFileTotalBytes());
+            }
+        }
+    }
+
+    public static class NotificationItem extends BaseNotificationItem {
+
+        PendingIntent pendingIntent;
+        NotificationCompat.Builder builder;
+
+        private NotificationItem(int id, String title, String desc) {
+            super(id, title, desc);
+            Intent[] intents = new Intent[2];
+            intents[0] = Intent.makeMainActivity(new ComponentName(DemoApplication.CONTEXT,
+                    MainActivity.class));
+            intents[1] = new Intent(DemoApplication.CONTEXT, NotificationDemoActivity.class);
+
+            this.pendingIntent = PendingIntent.getActivities(DemoApplication.CONTEXT, 0, intents,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+
+            builder = new NotificationCompat.
+                    Builder(FileDownloadHelper.getAppContext());
+            Intent pauseIntent = new Intent(KEY_PAUSE);
+            pauseIntent.putExtra(KEY_ID, getId());
+            PendingIntent pausePendingIntent = PendingIntent.getBroadcast(DemoApplication.CONTEXT,
+                    0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            builder.setDefaults(Notification.DEFAULT_LIGHTS)
+                    .setOngoing(true)
+                    .setPriority(NotificationCompat.PRIORITY_MIN)
+                    .setContentTitle(getTitle())
+                    .setContentText(desc)
+                    .setContentIntent(pendingIntent)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .addAction(R.mipmap.ic_launcher, "pause", pausePendingIntent);
+
+        }
+
+        @Override
+        public void show(boolean statusChanged, int status, boolean isShowProgress) {
+
+            String desc = getDesc();
+            switch (status) {
+                case FileDownloadStatus.pending:
+                    desc += " pending";
+                    break;
+                case FileDownloadStatus.started:
+                    desc += " started";
+                    break;
+                case FileDownloadStatus.progress:
+                    desc += " progress";
+                    break;
+                case FileDownloadStatus.retry:
+                    desc += " retry";
+                    break;
+                case FileDownloadStatus.error:
+                    desc += " error";
+                    break;
+                case FileDownloadStatus.paused:
+                    desc += " paused";
+                    break;
+                case FileDownloadStatus.completed:
+                    desc += " completed";
+                    break;
+                case FileDownloadStatus.warn:
+                    desc += " warn";
+                    break;
+            }
+
+            builder.setContentTitle(getTitle())
+                    .setContentText(desc);
+
+
+            if (statusChanged) {
+                builder.setTicker(desc);
+            }
+
+            builder.setProgress(getTotal(), getSofar(), !isShowProgress);
+            getManager().notify(getId(), builder.build());
+        }
+
+        @Override
+        public void cancel() {
+            super.cancel();
         }
     }
 }
