@@ -24,6 +24,16 @@ public class HotspotActivity extends AppCompatActivity implements ConnectivityCh
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        if (toolbar != null) {
+            toolbar.setNavigationIcon(R.mipmap.ic_up);
+            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onBackPressed();
+                }
+            });
+        }
+
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         receiver = new ConnectivityChangeReceiver();
         buttonStartHotspot = (Button) findViewById(R.id.buttonStartHotspot);
@@ -37,6 +47,7 @@ public class HotspotActivity extends AppCompatActivity implements ConnectivityCh
                     if (getIntent().getStringExtra("type").equals("sender")) {
                         Utility.setAndStartHotSpot(getApplicationContext(), true, "Hotspot_Go");
                         startActivity(new Intent(getApplicationContext(), ConnectionActivity.class).putExtra("hotspot", true));
+                        finish();
                     } else {
                         Utility.connectToHotspot(getApplicationContext(), "Hotspot_Go", "");
                         registerReceiver(

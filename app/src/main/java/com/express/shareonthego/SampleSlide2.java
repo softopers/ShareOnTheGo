@@ -7,15 +7,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class SampleSlide1 extends Fragment {
+public class SampleSlide2 extends Fragment {
 
-    public static SampleSlide1 newInstance() {
-        return new SampleSlide1();
+    public static SampleSlide2 newInstance() {
+        return new SampleSlide2();
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_intro1, container, false);
+        return inflater.inflate(R.layout.fragment_intro2, container, false);
     }
 }

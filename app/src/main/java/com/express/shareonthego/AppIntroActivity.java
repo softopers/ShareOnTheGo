@@ -10,8 +10,9 @@ public class AppIntroActivity extends AppIntro2 {
     @Override
     public void init(Bundle savedInstanceState) {
         addSlide(SampleSlide1.newInstance());
-        addSlide(SampleSlide1.newInstance());
-        addSlide(SampleSlide1.newInstance());
+        addSlide(SampleSlide2.newInstance());
+        addSlide(SampleSlide3.newInstance());
+        setIndicatorColor(getResources().getColor(R.color.colorPrimaryDark), getResources().getColor(R.color.colorAccent));
     }
 
     @Override

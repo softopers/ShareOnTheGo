@@ -3,6 +3,7 @@ package com.express.shareonthego;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -11,20 +12,22 @@ import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.androidzeitgeist.ani.discovery.DiscoveryException;
@@ -52,12 +55,15 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
 
     public static final int REQUEST_CODE = 1221;
     public final static String KEY_PAUSE = "key.filedownloader.notification.pause";
+
     private static final String EXTRA_MESSAGE = "message";
     private static final String EXTRA_NAME = "name";
     private final static String KEY_ID = "key.filedownloader.notification.id";
+
     public static String TAG = ConnectionActivity.class.getSimpleName();
+
     private static MyHttpServer httpServer = null;
-    private final String savePath = FileDownloadUtils.getDefaultSaveRootPath() + File.separator + "notification";
+
     public BroadcastReceiver pauseReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -76,6 +82,17 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
     private boolean discoveryStarted;
     private FileDownloadNotificationHelper<NotificationItem> notificationHelper;
     private NotificationListener listener;
+    private int downloadId = 0;
+    //    private CheckBox showNotificationCb;
+    private ProgressBar progressBar;
+
+    private void clear() {
+        /**
+         * why not use {@link FileDownloadNotificationHelper#clear()} directly?
+         */
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).
+                cancel(downloadId);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +101,27 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         notificationHelper = new FileDownloadNotificationHelper<>();
+
+        assignViews();
+
+//        showNotificationCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                if (!isChecked) {
+//                    notificationHelper.clear();
+//                    clear();
+//                }
+//            }
+//        });
+
         ((ShareOnTheGoApplication) getApplicationContext()).discovery.setDisoveryListener(this);
+        try {
+            ((ShareOnTheGoApplication) getApplicationContext()).discovery.enable();
+            discoveryStarted = true;
+        } catch (DiscoveryException exception) {
+            Log.d(TAG, "onResume: " + "* (!) Could not start discovery: " + exception.getMessage());
+            discoveryStarted = false;
+        }
         Util.context = this;
         if (toolbar != null) {
             toolbar.setNavigationIcon(R.mipmap.ic_up);
@@ -150,6 +187,18 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
                 }
             });
         }
+
+        listener = new NotificationListener(new WeakReference<>(this));
+
+
+//        if (downloadId != 0) {
+//            // Avoid the task has passed 'pending' status, so we must create notification manually.
+//            listener.addNotificationItem(downloadId);
+//        }
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(KEY_PAUSE);
+        registerReceiver(pauseReceiver, intentFilter);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -216,12 +265,31 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
         String message = intent.getStringExtra(EXTRA_MESSAGE);
         String name = intent.getStringExtra(EXTRA_NAME);
         String sender = address.getHostAddress();
+        String savePath = null;
         if (message != null) {
+            if (name != null) {
+                savePath = FileDownloadUtils.getDefaultSaveRootPath() + File.separator + name;
+            }
 
-            final String savePath = Environment.DIRECTORY_DOWNLOADS;
-            FileDownloader.getImpl().create("http://" + message)
-                    .setPath(savePath)
-                    .start();
+            downloadId = FileDownloader.getImpl().replaceListener("http://" + message, savePath, listener);
+
+            if (downloadId == 0) {
+                downloadId = FileDownloader.getImpl().create("http://" + message)
+                        .setPath(savePath)
+                        .setListener(listener)
+                        .start();
+            }
+
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+//stuff that updates ui
+                    progressBar.setVisibility(View.VISIBLE);
+                }
+            });
+
         }
         Log.d(TAG, "onIntentDiscovered: " + "<" + sender + "> " + message);
     }
@@ -229,22 +297,15 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
     @Override
     protected void onStart() {
         super.onStart();
-        try {
-            ((ShareOnTheGoApplication) getApplicationContext()).discovery.enable();
-            discoveryStarted = true;
-        } catch (DiscoveryException exception) {
-            Log.d(TAG, "onResume: " + "* (!) Could not start discovery: " + exception.getMessage());
-            discoveryStarted = false;
-        }
     }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (discoveryStarted) {
-            ((ShareOnTheGoApplication) getApplicationContext()).discovery.disable();
-        }
-    }
+//
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        if (discoveryStarted) {
+//            ((ShareOnTheGoApplication) getApplicationContext()).discovery.disable();
+//        }
+//    }
 
     protected void saveServerUrlToClipboard() {
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
@@ -320,19 +381,26 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
         unregisterReceiver(pauseReceiver);
     }
 
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_UP && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+            if (downloadId != 0) {
+                FileDownloader.getImpl().pause(downloadId);
+            }
+            notificationHelper.clear();
+            clear();
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    private void assignViews() {
+//        showNotificationCb = (CheckBox) findViewById(R.id.show_notification_cb);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
+    }
+
     private static class NotificationListener extends FileDownloadNotificationListener {
 
-        public final static String KEY_PAUSE = "key.filedownloader.notification.pause";
-        private final static String KEY_ID = "key.filedownloader.notification.id";
-        public BroadcastReceiver pauseReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(KEY_PAUSE)) {
-                    final int id = intent.getIntExtra(KEY_ID, 0);
-                    FileDownloader.getImpl().pause(id);
-                }
-            }
-        };
         private WeakReference<ConnectionActivity> wActivity;
 
         public NotificationListener(WeakReference<ConnectionActivity> wActivity) {
@@ -342,14 +410,14 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         protected BaseNotificationItem create(BaseDownloadTask task) {
-            return new NotificationItem(task.getId(), "demo title", "demo desc");
+            return new NotificationItem(task.getId(), "Share on the GO", "downloading");
         }
 
         @Override
         public void addNotificationItem(BaseDownloadTask task) {
             super.addNotificationItem(task);
             if (wActivity.get() != null) {
-                wActivity.get().showNotificationCb.setEnabled(false);
+//                wActivity.get().showNotificationCb.setEnabled(false);
             }
         }
 
@@ -357,7 +425,7 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
         public void destroyNotification(BaseDownloadTask task) {
             super.destroyNotification(task);
             if (wActivity.get() != null) {
-                wActivity.get().showNotificationCb.setEnabled(true);
+//                wActivity.get().showNotificationCb.setEnabled(true);
                 wActivity.get().downloadId = 0;
             }
         }
@@ -373,7 +441,7 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
         @Override
         protected boolean disableNotification(BaseDownloadTask task) {
             if (wActivity.get() != null) {
-                return !wActivity.get().showNotificationCb.isChecked();
+//                return !wActivity.get().showNotificationCb.isChecked();
             }
 
             return super.disableNotification(task);
@@ -402,6 +470,7 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
             super.completed(task);
             if (wActivity.get() != null) {
                 wActivity.get().progressBar.setIndeterminate(false);
+                wActivity.get().progressBar.setVisibility(View.GONE);
                 wActivity.get().progressBar.setProgress(task.getSmallFileTotalBytes());
             }
         }
@@ -415,18 +484,18 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
         private NotificationItem(int id, String title, String desc) {
             super(id, title, desc);
             Intent[] intents = new Intent[2];
-            intents[0] = Intent.makeMainActivity(new ComponentName(DemoApplication.CONTEXT,
+            intents[0] = Intent.makeMainActivity(new ComponentName(ShareOnTheGoApplication.CONTEXT,
                     MainActivity.class));
-            intents[1] = new Intent(DemoApplication.CONTEXT, NotificationDemoActivity.class);
+            intents[1] = new Intent(ShareOnTheGoApplication.CONTEXT, ConnectionActivity.class);
 
-            this.pendingIntent = PendingIntent.getActivities(DemoApplication.CONTEXT, 0, intents,
+            this.pendingIntent = PendingIntent.getActivities(ShareOnTheGoApplication.CONTEXT, 0, intents,
                     PendingIntent.FLAG_UPDATE_CURRENT);
 
             builder = new NotificationCompat.
                     Builder(FileDownloadHelper.getAppContext());
             Intent pauseIntent = new Intent(KEY_PAUSE);
             pauseIntent.putExtra(KEY_ID, getId());
-            PendingIntent pausePendingIntent = PendingIntent.getBroadcast(DemoApplication.CONTEXT,
+            PendingIntent pausePendingIntent = PendingIntent.getBroadcast(ShareOnTheGoApplication.CONTEXT,
                     0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             builder.setDefaults(Notification.DEFAULT_LIGHTS)

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@mipmap/bg"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.express.shareonthego.MainActivity"
@@ -13,9 +14,17 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:background="@color/colorAccent"
         android:padding="16dp">
 
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/linearLayout"
+            android:src="@mipmap/home_top" />
+
         <LinearLayout
+            android:id="@+id/linearLayout"
             android:layout_width="match_parent"
             android:layout_height="?actionBarSize"
             android:layout_alignParentBottom="true"
@@ -52,7 +61,6 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="#BBBBBB"
         android:orientation="vertical">
 
         <TextView
@@ -61,6 +69,7 @@
             android:gravity="center"
             android:text="RECEIVER DOESN'T HAVE APP?"
             android:textColor="@color/colorAccent"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
         <LinearLayout

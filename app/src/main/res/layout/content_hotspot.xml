@@ -21,12 +21,12 @@
         <ImageView
             android:layout_width="96dp"
             android:layout_height="96dp"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@mipmap/network" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:gravity="center"
             android:text="Hotspot allows you to share media to other devices instantly."
             android:textColor="@android:color/white"
@@ -36,7 +36,7 @@
             android:id="@+id/buttonStartHotspot"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/buttonshape_send"
             android:text="START HOTSPOT"
             android:textColor="@android:color/white"
