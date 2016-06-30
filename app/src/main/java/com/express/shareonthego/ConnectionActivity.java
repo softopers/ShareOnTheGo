@@ -79,7 +79,7 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
     private SpritzerTextView textViewIpAddress;
     private TextView uriPath;
     private TextView textViewWifi;
-    private boolean discoveryStarted;
+    private boolean discoveryStarted = false;
     private FileDownloadNotificationHelper<NotificationItem> notificationHelper;
     private NotificationListener listener;
     private int downloadId = 0;
@@ -115,12 +115,14 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
 //        });
 
         ((ShareOnTheGoApplication) getApplicationContext()).discovery.setDisoveryListener(this);
-        try {
-            ((ShareOnTheGoApplication) getApplicationContext()).discovery.enable();
-            discoveryStarted = true;
-        } catch (DiscoveryException exception) {
-            Log.d(TAG, "onResume: " + "* (!) Could not start discovery: " + exception.getMessage());
-            discoveryStarted = false;
+        if (!discoveryStarted) {
+            try {
+                ((ShareOnTheGoApplication) getApplicationContext()).discovery.enable();
+                discoveryStarted = true;
+            } catch (DiscoveryException exception) {
+                Log.d(TAG, "onResume: " + "* (!) Could not start discovery: " + exception.getMessage());
+                discoveryStarted = false;
+            }
         }
         Util.context = this;
         if (toolbar != null) {

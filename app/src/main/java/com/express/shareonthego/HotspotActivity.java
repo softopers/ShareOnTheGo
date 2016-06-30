@@ -10,12 +10,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 
 public class HotspotActivity extends AppCompatActivity implements ConnectivityChangeReceiver.Listener {
 
     private WifiManager mWifiManager;
     private Button buttonStartHotspot;
     private ConnectivityChangeReceiver receiver;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +25,8 @@ public class HotspotActivity extends AppCompatActivity implements ConnectivityCh
         setContentView(R.layout.activity_hotspot);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         if (toolbar != null) {
             toolbar.setNavigationIcon(R.mipmap.ic_up);
@@ -44,10 +48,12 @@ public class HotspotActivity extends AppCompatActivity implements ConnectivityCh
             buttonStartHotspot.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    progressBar.setVisibility(View.VISIBLE);
                     if (getIntent().getStringExtra("type").equals("sender")) {
                         Utility.setAndStartHotSpot(getApplicationContext(), true, "Hotspot_Go");
                         startActivity(new Intent(getApplicationContext(), ConnectionActivity.class).putExtra("hotspot", true));
                         finish();
+                        progressBar.setVisibility(View.GONE);
                     } else {
                         Utility.connectToHotspot(getApplicationContext(), "Hotspot_Go", "");
                         registerReceiver(
@@ -75,6 +81,7 @@ public class HotspotActivity extends AppCompatActivity implements ConnectivityCh
 
     @Override
     public void onUIChanges() {
+        progressBar.setVisibility(View.GONE);
         startActivity(new Intent(getApplicationContext(), ConnectionActivity.class));
         finish();
     }

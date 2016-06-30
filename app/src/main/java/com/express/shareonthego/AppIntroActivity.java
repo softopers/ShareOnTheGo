@@ -7,12 +7,17 @@ import android.view.View;
 import com.github.paolorotolo.appintro.AppIntro2;
 
 public class AppIntroActivity extends AppIntro2 {
+
     @Override
     public void init(Bundle savedInstanceState) {
-        addSlide(SampleSlide1.newInstance());
-        addSlide(SampleSlide2.newInstance());
-        addSlide(SampleSlide3.newInstance());
-        setIndicatorColor(getResources().getColor(R.color.colorPrimaryDark), getResources().getColor(R.color.colorAccent));
+        if (PrefUtils.isIntro(getApplicationContext())) {
+            loadMainActivity();
+        } else {
+            addSlide(SampleSlide1.newInstance());
+            addSlide(SampleSlide2.newInstance());
+            addSlide(SampleSlide3.newInstance());
+            setIndicatorColor(getResources().getColor(R.color.colorPrimaryDark), getResources().getColor(R.color.colorAccent));
+        }
     }
 
     @Override
@@ -33,6 +38,10 @@ public class AppIntroActivity extends AppIntro2 {
     private void loadMainActivity() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+        finish();
+        if (!PrefUtils.isIntro(getApplicationContext())) {
+            PrefUtils.markIntro(getApplicationContext(), true);
+        }
     }
 
     public void getStarted(View v) {
