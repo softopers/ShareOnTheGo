@@ -39,6 +39,8 @@ public class HotspotActivity extends AppCompatActivity implements ConnectivityCh
         }
 
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiManager.disconnect();
+
         receiver = new ConnectivityChangeReceiver();
         buttonStartHotspot = (Button) findViewById(R.id.buttonStartHotspot);
         if (buttonStartHotspot != null) {

@@ -296,19 +296,6 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
         Log.d(TAG, "onIntentDiscovered: " + "<" + sender + "> " + message);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-//
-//    @Override
-//    protected void onStop() {
-//        super.onStop();
-//        if (discoveryStarted) {
-//            ((ShareOnTheGoApplication) getApplicationContext()).discovery.disable();
-//        }
-//    }
-
     protected void saveServerUrlToClipboard() {
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         clipboard.setPrimaryClip(ClipData.newPlainText(preferredServerUrl, preferredServerUrl));
@@ -379,7 +366,9 @@ public class ConnectionActivity extends AppCompatActivity implements View.OnClic
         } else if (Utility.isConnectedToAP(getApplicationContext())) {
             Utility.removeWifiNetwork("Hotspot_Go");
         }
-
+        if (discoveryStarted) {
+            ((ShareOnTheGoApplication) getApplicationContext()).discovery.disable();
+        }
         unregisterReceiver(pauseReceiver);
     }
 
