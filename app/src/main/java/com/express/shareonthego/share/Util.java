@@ -23,7 +23,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 
-package com.express.shareonthego.shareviahttp;
+package com.express.shareonthego.share;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;

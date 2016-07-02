@@ -4,9 +4,9 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 
-import com.androidzeitgeist.ani.discovery.Discovery;
-import com.androidzeitgeist.ani.transmitter.Transmitter;
-import com.androidzeitgeist.ani.transmitter.TransmitterException;
+import com.android.express.discovery.Discovery;
+import com.android.express.transmitter.Transmitter;
+import com.android.express.transmitter.TransmitterException;
 import com.liulishuo.filedownloader.FileDownloader;
 import com.liulishuo.filedownloader.util.FileDownloadHelper;
 

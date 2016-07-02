@@ -1,4 +1,4 @@
-package com.express.shareonthego.shareviahttp;
+package com.express.shareonthego.share;
 
 import android.net.Uri;
 import android.util.Log;

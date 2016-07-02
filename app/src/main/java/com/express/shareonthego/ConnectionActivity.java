@@ -30,11 +30,11 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.androidzeitgeist.ani.discovery.DiscoveryException;
-import com.androidzeitgeist.ani.discovery.DiscoveryListener;
-import com.express.shareonthego.shareviahttp.MyHttpServer;
-import com.express.shareonthego.shareviahttp.UriInterpretation;
-import com.express.shareonthego.shareviahttp.Util;
+import com.android.express.discovery.DiscoveryException;
+import com.android.express.discovery.DiscoveryListener;
+import com.express.shareonthego.share.MyHttpServer;
+import com.express.shareonthego.share.UriInterpretation;
+import com.express.shareonthego.share.Util;
 import com.express.shareonthego.spritzer.Spritzer;
 import com.express.shareonthego.spritzer.SpritzerTextView;
 import com.liulishuo.filedownloader.BaseDownloadTask;

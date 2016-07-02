@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @version 1.0
  */
 
-package com.express.shareonthego.shareviahttp;
+package com.express.shareonthego.share;
 
 import android.util.Log;
 

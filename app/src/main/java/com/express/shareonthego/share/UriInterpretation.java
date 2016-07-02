@@ -3,7 +3,7 @@
  * APACHE 2.0 License.
  *
  */
-package com.express.shareonthego.shareviahttp;
+package com.express.shareonthego.share;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
