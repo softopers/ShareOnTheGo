@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.express.transmitter;
+package com.express.transmitter;
 
 import android.content.Intent;
 
-import com.android.express.discovery.Discovery;
-import com.android.express.internal.AndroidNetworkIntents;
+import com.express.discovery.Discovery;
+import com.express.internal.AndroidNetworkIntents;
 import com.express.shareonthego.MainActivity;
 
 import java.io.IOException;

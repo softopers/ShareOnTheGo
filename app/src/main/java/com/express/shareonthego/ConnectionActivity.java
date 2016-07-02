@@ -30,8 +30,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.android.express.discovery.DiscoveryException;
-import com.android.express.discovery.DiscoveryListener;
+import com.express.discovery.DiscoveryException;
+import com.express.discovery.DiscoveryListener;
 import com.express.shareonthego.share.MyHttpServer;
 import com.express.shareonthego.share.UriInterpretation;
 import com.express.shareonthego.share.Util;

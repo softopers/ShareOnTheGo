@@ -1,4 +1,4 @@
-package com.android.express.discovery;
+package com.express.discovery;
 
 import android.content.Intent;
 

@@ -14,24 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.express.transmitter;
+package com.express.internal;
 
 /**
- * Wrapper exception for all kind of low level exceptions that can be thrown by
- * the implementation of the {@link Transmitter} class.
+ * Internal class for implementation specific constants.
  *
  * @author Sebastian Kaspari <s.kaspari@gmail.com>
  */
-@SuppressWarnings("serial")
-public class TransmitterException extends Exception {
-    /**
-     * Constructs a new {@link TransmitterException} with the current stack trace, the
-     * specified detail message and the specified cause.
-     *
-     * @param detailMessage the detail message for this exception.
-     * @param cause         the cause of this exception.
-     */
-    public TransmitterException(String detailMessage, Throwable cause) {
-        super(detailMessage, cause);
-    }
+public class AndroidNetworkIntents {
+    public static final String DEFAULT_MULTICAST_ADDRESS = "225.4.5.6";
+
+    public static final int DEFAULT_PORT = 5775;
 }

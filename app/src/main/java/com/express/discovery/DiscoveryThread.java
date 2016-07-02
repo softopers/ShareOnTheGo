@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.androidzeitgeist.ani.discovery;
+package com.express.discovery;
 
 import android.content.Intent;
 import android.util.Log;
