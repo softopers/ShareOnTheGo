@@ -8,5 +8,6 @@ https://github.com/marcosdiez/shareviahttp is used to share files between connec
 Expand it as you want.
 
 For more details please contact at softoperstechnologies@gmail.com
+http://softopers.in/
 
 Don't forget to share love : https://play.google.com/store/apps/details?id=com.wallkard
